@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : https://store.webkul.com/license.html/ -->
+<odoo>
+
+    <template id="mp_contact_seller_template" name="Contact Seller Template">
+        <div t-if="request.env.user.partner_id.id != seller.id" id="commModal" class="modal fade" role="dialog">
+            <form class="mp_contact_seller_form needs-validation" action="/submit/communication" method="post">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary">
+                            <h4 class="modal-title mb0 mt0">SEND INQUIRY TO SELLER</h4>
+                            <button type="button" class="close" data-dismiss="modal"><i class="fa fa-close"/></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="marketplace_seller_id" t-att-value="seller.id"/>
+                            <input type="hidden" name="seller_url" t-attf-value="/seller/profile/#{seller.sudo().url_handler if seller.sudo().url_handler else seller.sudo().id}"/>
+                            <input type="hidden" name="product_id" placeholder="Product ID" t-att-value="product.id if product else False" required="1" readonly="1"/>
+                            <input type="hidden" name="category_id" placeholder="Product Category" t-att-value="product and product.public_categ_id and product.public_categ_id.id" required="1" readonly="1"/>
+                            <div class="form-row mb8">
+                                <label class="text-muted" for="name">Your Name : <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="name" placeholder="Name" t-att-value="request.env.user.partner_id.name" required="1" readonly="1"/>
+                            </div>
+                            <div class="form-row mb16">
+                                <label class="text-muted" for="email">Your Email : <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="email" placeholder="Email" t-att-value="request.env.user.partner_id.email" required="1" readonly="1"/>
+                            </div>
+                            <div class="form-row mb16">
+                                <label class="text-muted" for="product">Product Name : <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="product_name" placeholder="Product Name" t-att-value="product.name if product else False" required="1" readonly="1"/>
+                            </div>
+                            <div class="form-row mb8">
+                                <label class="text-muted" for="name">Subject : <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="subject" placeholder="Subject" value="" required="1"
+                                    default_focus="1" autocomplete="off"/>
+                            </div>
+                            <div class="form-row mb8">
+                                <label class="text-muted" for="email">Your Query : <span class="text-danger">*</span></label>
+                                <textarea name="query_desc" rows="4" cols="100"
+                                    id="query_desc"
+                                    class="form-control"
+                                    placeholder="Type your message..."
+                                    required="1"
+                                />
+                            </div>
+                            <div class="form-row">
+                                <label class="text-muted" for="mp_auth_form_input"> <span class="auth_question"></span>
+                                    <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="mp_auth_form_input" placeholder="" required="1" autocomplete="off"/>
+                            </div>
+                            <div class="show_form_err" style="display:none;">
+                                <span class="text-danger" style="font-size: 14px;">
+                                    <i class="fa fa-exclamation-triangle"/> Invalid Captcha..!!
+                                </span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="communication_modal_close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button id="comm_form_submit" class="btn btn-success" type="submit" style="padding:6px 25px;"> Submit </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div t-if="request.env.user.partner_id.id == seller.id" id="SellerWarningModal" class="modal fade" role="dialog">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header bg-warning">
+                <h4 class="modal-title text-danger">Warning</h4>
+                <button type="button" class="close fa fa-close" data-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <p>You cannot contact to yourself.</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a href="#" data-toggle="modal" data-target="#commModal" role="button" class="btn btn-secondary d-block d-sm-inline-block mt16" aria-label="Send Inquiry" title="Send Inquiry"
+            t-if="request.env['ir.default'].sudo().get('res.config.settings', 'group_mp_buyer_seller_comm') and seller.allow_buyer_seller_comm and request.env.user.partner_id.id != seller.id">
+            Send Inquiry
+        </a>
+            <!-- <i class="fa fa-shopping-cart"/>  -->
+        <a href="#" data-toggle="modal" data-target="#SellerWarningModal" role="button" class="btn btn-secondary d-block d-sm-inline-block mt16" aria-label="Send Inquiry" title="Send Inquiry"
+            t-if="request.env['ir.default'].sudo().get('res.config.settings', 'group_mp_buyer_seller_comm') and seller.allow_buyer_seller_comm and request.env.user.partner_id.id == seller.id">
+            Send Inquiry
+        </a>
+            <!-- <i class="fa fa-shopping-cart"/>  -->
+        <!-- <a href="#" data-toggle="modal" data-target="#commModal" role="button" class="btn btn-primary btn-lg mt16 d-block d-sm-inline-block"
+            t-if="request.env['ir.default'].sudo().get('res.config.settings', 'group_mp_buyer_seller_comm') and seller.allow_buyer_seller_comm and request.env.user.partner_id.id != seller.id"
+            t-att-class="'a-submit btn btn-lg btn-primary d-block d-sm-inline-block mt16' if not product_page else ''" title="Click here to Contact to Seller"><i class="fa fa-shopping-cart"/> Send Inquiry</a>
+        <a href="#" data-toggle="modal" data-target="#SellerWarningModal" role="button" class="btn btn-primary btn-lg mt16 d-block d-sm-inline-block"
+            t-if="request.env['ir.default'].sudo().get('res.config.settings', 'group_mp_buyer_seller_comm') and seller.allow_buyer_seller_comm and request.env.user.partner_id.id == seller.id"
+            t-att-class="'a-submit btn btn-lg btn-primary d-block d-sm-inline-block mt16' if not product_page else ''" title="Click here to Contact to Seller"><i class="fa fa-shopping-cart"/> Send Inquiry</a> -->
+    </template>
+
+    <template id="buyer_seller_comm_inherit_mp_seller_profile" inherit_id="odoo_marketplace.mp_seller_profile" name="Buyer Seller Communication Seller Profile">
+        <xpath expr="//div[@id='wrap']//a[@t-attf-href='mailto:{{ seller.email }}']" position="attributes">
+            <attribute name="t-if">not request.env['ir.default'].sudo().get('res.config.settings', 'group_mp_buyer_seller_comm') or not seller.allow_buyer_seller_comm</attribute>
+        </xpath>
+        <xpath expr="//div[@id='wrap']//a[@t-attf-href='mailto:{{ seller.email }}']" position="after">
+            <t t-set="is_user_public" t-value="website.env.user == request.website.user_id"/>
+            <div t-if="is_user_public">
+                <a t-if="request.env['ir.default'].sudo().get('res.config.settings', 'group_mp_buyer_seller_comm') and seller.allow_buyer_seller_comm"
+                    t-attf-href="mailto:{{ seller.email }}" class="btn btn-primary">Send email to seller</a>
+            </div>
+            <div t-if="not is_user_public">
+                <t t-call="marketplace_buyer_seller_communication.mp_contact_seller_template"/>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="buyer_seller_comm_inherit_product" inherit_id="website_sale.product" customize_show="True" active="True" name="Show Contact Us">
+        <xpath expr="//div[hasclass('css_quantity')]" position="replace">
+            <!-- <attribute name="invisible">1</attribute> -->
+        </xpath>
+        <xpath expr="//a[@id='add_to_cart']" position="replace">
+            <!-- <attribute name="invisible">1</attribute> -->
+        </xpath>
+        <xpath expr="//hr[@t-if='product.description_sale']" position="before">
+            <div t-if="website.env.user != request.website.user_id">
+                <t t-set="seller" t-value="product.sudo().marketplace_seller_id"/>
+                <t t-set="product_page" t-value="1"/>
+                <t t-call="marketplace_buyer_seller_communication.mp_contact_seller_template"/>
+            </div>
+            <div t-else="">
+                <t t-set="seller" t-value="product.sudo().marketplace_seller_id"/>
+                <div id="MpUserLoginModal" class="modal fade" role="dialog">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-warning">
+                        <h4 style="color:#823838;">
+                            <i class="fa fa-exclamation-triangle" aria-label="alert" aria-hidden="true"> Alert </i>
+                        </h4>
+                      </div>
+                      <div class="modal-body" style="color:black;">
+                            <h4 style="color:rgba(0, 0, 0, 0.78);">You must first
+                                <a href="/web/login" style="text-decoration: underline;" help="Click here to login."> login</a>
+                            to communicate to seller.</h4>
+                      </div>
+                      <div class="modal-footer">
+                        <button id="login_modal_close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <a href="#" data-toggle="modal" data-target="#MpUserLoginModal" role="button" class="btn btn-secondary d-block d-sm-inline-block mt16" aria-label="Send Inquiry" title="Send Inquiry"
+                    t-if="request.env['ir.default'].sudo().get('res.config.settings', 'group_mp_buyer_seller_comm') and seller.allow_buyer_seller_comm">
+                    Send Inquiry
+                </a>
+                    <!-- <i class="fa fa-shopping-cart"/> -->
+                <!-- <a href="#" data-toggle="modal" data-target="#MpUserLoginModal" role="button" class="btn btn-primary btn-lg mt16 d-block d-sm-inline-block"
+                    t-if="request.env['ir.default'].sudo().get('res.config.settings', 'group_mp_buyer_seller_comm') and seller.allow_buyer_seller_comm"
+                    title="Click here to Contact to Seller">Send Inquiry</a> -->
+            </div>
+        </xpath>
+    </template>
+
+    <template id="product_add_to_wishlist_inherit" inherit_id="website_sale_wishlist.product_add_to_wishlist" customize_show="True" active="True" name="Show Wish List on Product Detail">
+        <xpath expr="//div[@id='product_option_block']" position="replace">
+            <t t-set="product_variant" t-value="product_variant or product._create_first_product_variant()"/>
+            <t t-set="in_wish" t-value="product_variant and product_variant._is_in_wishlist()"/>
+            <button t-if="product_variant" type="button" role="button" class="btn btn-link mt16 o_add_wishlist_dyn" t-att-disabled='in_wish or None' t-att-data-product-template-id="product.id" t-att-data-product-product-id="product_variant.id" data-action="o_wishlist"><span class="fa fa-heart" role="img" aria-label="Add to wishlist"></span> Add to wishlist</button>
+        </xpath>
+    </template>
+
+    <template id="portal_general_inquiries" name="Portal MP Inquiries: Create Generic Inquiries">
+        <div class="container mb16">
+            <!-- Modal general inquiries -->
+            <div t-if="resp == 'portal'" class="alert alert-danger text-center">
+                <strong>Failed!</strong> Only buyer can submit this form.<br/>
+                <a href="/web/login" role="button" class="btn btn-secondary d-block d-sm-inline-block mt16" aria-label="Sign In" title="Sign In">
+                    <i class="fa fa-sign-in"/> Sign In
+                </a>
+            </div>
+            <div t-if="resp == 'seller'" class="alert alert-danger text-center">
+                <strong>Failed!</strong> As a seller you cannot submit this form. Only buyer can submit this form.
+            </div>
+            <div t-if="resp == False" id="loadFormGeneralInquiry">
+                <form class="mp_general_inquiry needs-validation" action="/submit/general-inquiries" method="post">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="name" t-att-value="request.env.user.partner_id.name"/>
+                    <input type="hidden" name="email" t-att-value="request.env.user.partner_id.email"/>
+                    <div class="form-row mb8">
+                        <label class="text-muted" for="category_id">Product Category : <span class="text-danger">*</span></label>
+                        <select id="category_id" name="category_id" class="form-control" required="required">
+                            <option value="">Select Product Category</option>
+                            <t t-foreach="public_categ_ids" t-as="s">
+                                <option t-att-value="s.id">
+                                    <t t-esc="s.name" />
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="form-row mb8">
+                        <label class="text-muted" for="state_id">Seller Location : </label>
+                        <select id="state_id" name="state_id" class="form-control">
+                            <option value="">Select Seller Location</option>
+                            <t t-foreach="country_state_ids" t-as="c">
+                                <option t-att-value="c.id">
+                                    <t t-esc="c.name" />
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="form-row mb8">
+                        <label class="text-muted" for="subject">Subject : <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="subject" placeholder="Subject" value="" required="1"
+                            default_focus="1" autocomplete="off"/>
+                    </div>
+                    <div class="form-row mb8">
+                        <label class="text-muted" for="query_desc">Your Query : <span class="text-danger">*</span></label>
+                        <textarea name="query_desc" rows="4" cols="100"
+                            id="query_desc"
+                            class="form-control"
+                            placeholder="Type your message..."
+                            required="1"
+                        />
+                    </div>
+                    <div class="form-row">
+                        <label class="text-muted" for="mp_auth_form_input"> <span class="auth_question"></span>
+                            <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="mp_auth_form_input" placeholder="" required="1" autocomplete="off"/>
+                    </div>
+                    <div class="show_form_err" style="display:none;">
+                        <span class="text-danger" style="font-size: 14px;">
+                            <i class="fa fa-exclamation-triangle"/> Invalid Captcha..!!
+                        </span>
+                    </div>
+                    <div class="form-row mt32">
+                        <button id="comm_form_submit" class="btn btn-success" type="submit" style="padding:6px 25px;"> Submit </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <!-- split between ir_ui_view & website_page record to keep external_id on ir_ui_view -->
+    <template id="portal_inquiry" name="Portal MP Inquiries: Create Generic Inquiries">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'inquiry'"/>
+            <!-- <div id="wrap" class="oe_structure oe_empty"/> -->
+            <div id="wrap">
+                <div class="oe_structure">
+                    <section class="s_title parallax s_parallax_is_fixed bg-black-50 pt24 pb24" data-vcss="001" data-snippet="s_title" data-scroll-background-ratio="1">
+                        <span class="s_parallax_bg oe_img_bg" style="background-image: url('/web/image/website.s_banner_default_image'); background-position: 50% 0;"/>
+                        <div class="o_we_bg_filter bg-black-50"/>
+                        <div class="container">
+                            <h1>Inquiry</h1>
+                        </div>
+                    </section>
+                </div>
+                <div class="container mt-4 mb-5">
+                    <div class="row">
+                        <div class="col-lg-7 col-xl-6 mr-lg-auto">
+                            <div class="oe_structure">
+                                <section class="s_text_block" data-snippet="s_text_block">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <p>
+                                                    Inquiry feature allows you to send inquiries to many sellers at once.<br/>
+                                                    You can choose any Product Category and Seller Locations combinations.<br/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                            <section class="s_website_form" data-vcss="001" data-snippet="s_website_form">
+                                <div class="container">
+                                    <t t-call="marketplace_buyer_seller_communication.portal_general_inquiries" name="General Inquiries" />
+                                </div>
+                            </section>
+                        </div>
+                        <div class="col-lg-4 mt-4 mt-lg-0">
+                            <t t-call="website.company_description"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="oe_structure mt-2"/>
+            </div>
+        </t>
+    </template>
+</odoo>

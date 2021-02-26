@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : https://store.webkul.com/license.html/ -->
+<odoo>
+    <data>
+        <record id= "mp_buyer_seller_comm_tree_view" model= "ir.ui.view">
+            <field name= "name">buyer.seller.communication.tree</field>
+            <field name= "model">buyer.seller.communication</field>
+            <field name="type">tree</field>
+            <field name= "arch" type= "xml">
+                <tree string="Buyer Inquiries" create="false" edit="false" delete="false">
+                    <field name="buyer_id"/>
+                    <field name= "subject"/>
+                    <field name= "product_id"/>
+                    <!-- <field name= "query_type"/> -->
+                    <field name= "create_date"/>
+                    <field name= "state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id= "mp_buyer_seller_comm_form_view" model= "ir.ui.view">
+            <field name= "name">buyer.seller.communication.form</field>
+            <field name= "model">buyer.seller.communication</field>
+            <field name="type">form</field>
+            <field name= "arch" type= "xml">
+                <form string="Buyer Inquiries" create="false" edit="false" delete="false">
+                    <header>
+                        <button name="button_set_to_resolved" string="Resolved" type="object" states="open" class="btn-primary"/>
+                        <button name="button_set_to_closed" string="Close" type="object" states="resolved" class="btn-primary"/>
+                        <field name="state" widget="statusbar" statusbar_visible="open,resolved,closed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <b><label for="subject" string="Subject" class=""/></b>
+                        	<h1>
+								<field name="subject" default_focus="1" placeholder="Subject" class=" oe_title"  attrs="{'readonly': [('state', 'in', ['resolved', 'closed'])]}"/>
+							</h1>
+						</div>
+                        <group>
+                            <group>
+                                <!-- <field name="query_type" attrs="{'readonly': [('state', 'in', ['resolved', 'closed'])]}"/> -->
+                                <field name="buyer_id" context="{'form_view_ref': 'odoo_marketplace.customer_form_view_for_marketplace'}"
+                                    options= "{'no_create_edit': True}"  attrs="{'readonly': [('state', 'in', ['resolved', 'closed'])]}"/>
+                                <field name="marketplace_seller_id"
+                                    groups="odoo_marketplace.marketplace_officer_group"
+                                    options= "{'no_create_edit': True}"
+                                    domain="[('seller','=',True),('state','=','approved')]"  attrs="{'readonly': [('state', 'in', ['resolved', 'closed'])]}"
+                                    context="{'form_view_ref':'odoo_marketplace.wk_seller_form_view', 'tree_view_ref':'odoo_marketplace.wk_seller_tree_view',}"/>
+                                <field name="product_id" readonly="1"/>
+                                <field name="category_id" readonly="1"/>
+                                <field name="state_id" readonly="1"/>
+                            </group>
+                            <field name="id" invisible="1"/>
+                            <group attrs="{'invisible': [('id', '=', False)]}">
+                                <field name="create_date" readonly="1"/>
+                                <field name="resolved_date" attrs="{'invisible': [('state', 'in', ['open'])]}" readonly="1"/>
+                                <field name="closed_date" attrs="{'invisible': [('state', 'in', ['open', 'resolved'])]}" readonly="1"/>
+                            </group>
+                        </group>
+                        <b><label for="desc" string="Description" class=""/></b>
+                        <field name="desc" class="" placeholder="Add a description..." attrs="{'readonly': [('state', 'in', ['resolved', 'closed'])]}"/>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread" />
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id= "mp_buyer_seller_comm_graph_view" model= "ir.ui.view">
+            <field name= "name">buyer.seller.communication.graph</field>
+            <field name= "model">buyer.seller.communication</field>
+            <field name="type">graph</field>
+            <field name= "arch" type= "xml">
+                <graph string="Inquiry Analytic" type="line" sample="1" disable_linking="1">
+                    <field name="create_date" interval="day"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id= "mp_buyer_seller_comm_pivot_view" model= "ir.ui.view">
+            <field name= "name">buyer.seller.communication.pivot</field>
+            <field name= "model">buyer.seller.communication</field>
+            <field name="type">pivot</field>
+            <field name= "arch" type= "xml">
+                <pivot string="Inquiry Pivot" sample="1">
+                    <field name="marketplace_seller_id" type="col"/>
+                    <field name="product_id" type="row"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id= "mp_buyer_seller_comm_dashboard_view" model= "ir.ui.view">
+            <field name= "name">buyer.seller.communication.dashboard</field>
+            <field name= "model">buyer.seller.communication</field>
+            <field name="type">dashboard</field>
+            <field name= "arch" type= "xml">
+                <dashboard sample="1">
+                    <group>
+                        <!--<aggregate name="total" string="Total Inquiry" field="id" help="Total Inquiry"/>-->
+                        <!--<formula name="total" string="Total Inquiries" value="len(records)" />-->
+                        <!--<aggregate name="avg_days_to_confirm" string="Average Days to Confirm" field="avg_days_to_confirm" group_operator="avg" value_label="days" clickable="False"/>-->
+                        <aggregate name="product" string="# Product Inquired" field="product_id"/>
+                        <aggregate name="buyers" string="# Buyer" field="buyer_id"/>
+                        <!--<aggregate name="lines" string="# Lines" field="nbr"/>-->
+                    </group>
+                    <group>
+                        <group>
+                            <view type="graph" ref="__export__.ir_ui_view_2117_d2092e8e"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <widget name="pie_chart" title="Category" attrs="{'groupby': 'category_id'}"/>
+                        </group>
+                        <group>
+                            <view type="pivot" ref="__export__.ir_ui_view_2116_876969af"/>
+                        </group>
+                    </group>
+                </dashboard>
+            </field>
+        </record>
+
+        <record id="inherit_mp_buyer_seller_comm_form_view" model="ir.ui.view">
+           <field name="name">buyer.seller.communication.form.inherit</field>
+           <field name="model">buyer.seller.communication</field>
+           <field name="inherit_id" ref="marketplace_buyer_seller_communication.mp_buyer_seller_comm_form_view"/>
+           <field name="groups_id" eval="[(6, 0, [ref('odoo_marketplace.marketplace_officer_group') ])]"/>
+            <field name="type">form</field>
+           <field name="arch" type="xml">
+               <form position="attributes">
+                   <attribute name="create">1</attribute>
+                   <attribute name="edit">1</attribute>
+                   <attribute name="delete">1</attribute>
+               </form>
+           </field>
+       </record>
+
+        <record id="inherit_mp_buyer_seller_comm_tree_view" model="ir.ui.view">
+            <field name="name">buyer.seller.communication.tree.inherit</field>
+            <field name="model">buyer.seller.communication</field>
+            <field name="inherit_id" ref="marketplace_buyer_seller_communication.mp_buyer_seller_comm_tree_view"/>
+            <field name="groups_id" eval="[(6, 0, [ref('odoo_marketplace.marketplace_officer_group') ])]"/>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree position="attributes">
+                    <attribute name="create">1</attribute>
+                    <attribute name="edit">1</attribute>
+                    <attribute name="delete">1</attribute>
+                </tree>
+            </field>
+        </record>
+
+        <record id="mp_buyer_seller_comm_search_view" model="ir.ui.view">
+            <field name="name">buyer.seller.communication.search</field>
+            <field name="model">buyer.seller.communication</field>
+            <field name="type">search</field>
+			<field name="arch" type="xml">
+				<search string="Search Communication">
+                    <field name="subject" string="Subject" filter_domain="['|',('subject','ilike',self),('subject','=',self)]"/>
+                    <group string="Group By">
+                        <filter name="group_product" string="Product" context="{'group_by':'product_id'}"/>
+                        <filter name="group_category" string="Category" context="{'group_by':'category_id'}"/>
+                        <filter name="group_location" string="Location" context="{'group_by':'state_id'}"/>
+                        <filter name="group_comm_states" string="States" context="{'group_by':'state'}"/>
+                        <filter name="group_buyer_id" string="Buyer" domain="[]" context="{'group_by':'buyer_id'}"/>
+                        <!-- <filter name="group_query_type" string="Query type" domain="[]" context="{'group_by':'query_type'}"/> -->
+                        <filter name="group_comm_states_open" string="Open" domain="[('state', '=', 'open')]"/>
+                        <filter name="group_comm_states_resolved" string="Resolved" domain="[('state', '=', 'resolved')]"/>
+                        <filter name="group_comm_states_closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="inherit_mp_buyer_seller_comm_search_view" model="ir.ui.view">
+            <field name="name">buyer.seller.communication.search.inherit</field>
+            <field name="model">buyer.seller.communication</field>
+            <field name="inherit_id" ref="marketplace_buyer_seller_communication.mp_buyer_seller_comm_search_view"/>
+            <field name="groups_id" eval="[(6, 0, [ref('odoo_marketplace.marketplace_officer_group') ])]"/>
+            <field name="arch"  type="xml">
+                <group position="inside">
+                    <filter string="Seller"
+                        context="{'group_by':'marketplace_seller_id'}"
+                        name="groupby_marketplace_seller_id"
+                        groups="odoo_marketplace.marketplace_officer_group"
+                        />
+                </group>
+            </field>
+        </record>
+
+        <record id="mp_buyer_seller_comm_action" model="ir.actions.act_window">
+            <field name="name">Buyer Inquiries</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">buyer.seller.communication</field>
+            <field name="domain">[('marketplace_seller_id','in',['get_marketplace_seller_id()'])]</field>
+            <field name="context">{"search_default_groupby_marketplace_seller_id": 1}</field>
+            <field name="view_mode">tree,dashboard,pivot,graph,form</field>
+            <field name="help" type="html">
+              <p>
+                Here is a list of all the communications taken between buyer and seller. You
+                can click on any record to get the detailed Information About Communication.
+              </p>
+            </field>
+        </record>
+
+        <menuitem
+            name="Buyer Inquiries"
+            id="mp_buyer_seller_comm_menu"
+            sequence="7"
+            action= "marketplace_buyer_seller_communication.mp_buyer_seller_comm_action"
+            parent= "odoo_marketplace.wk_seller_dashboard"
+            groups="marketplace_buyer_seller_communication.group_for_mp_buyer_seller_comm,odoo_marketplace.marketplace_officer_group"
+        />
+
+    </data>
+</odoo>

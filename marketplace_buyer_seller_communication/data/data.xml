@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- custom  -->
+        <!-- Scheduler for sending new inquiry mail notifications. -->
+        <record id="ir_cron_auto_mail_seller_new_inquiry" model="ir.cron">
+            <field name="name">Marketplace Buyer Seller Communication; Notify new inquiry to seller by email.</field>
+            <field name="interval_number">3</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="model_id" ref="model_buyer_seller_communication"/>
+            <field name="code">model._cron_send_new_inquries()</field>
+            <field name="state">code</field>
+        </record>
+        <!--Email template for new inquiry mail notification-->
+        <record id="new_inquiry_email_template_for_seller" model="mail.template">
+            <field name="name">Marketplace Buyer Seller Communication; Mail template Notify new inquiry to seller by email.</field>
+            <field name="email_from">${ctx.get('company').email or ''}</field>
+            <field name="subject">Inquire ID: New Inquiry For You</field>
+            <field name="email_to">${object.marketplace_seller_id.email or ''}</field>
+            <field name="model_id" ref="model_buyer_seller_communication"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="lang">${object.lang}</field>
+            <field name="body_html"><![CDATA[
+                <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+
+                    <p>Hello ${object.marketplace_seller_id.name or ''},</p>
+                    <p>
+                        <b>${object.buyer_id.name}</b>, just sent you a new inquiry. Click the link below to open your inqury document.
+                    </p>
+                    <p><br></p>
+                    <p>
+                        % set website_url = object.env['ir.config_parameter'].sudo().get_param('web.base.url')
+                        % set action_id = object.env.ref('marketplace_buyer_seller_communication.mp_buyer_seller_comm_action').id
+                        <a href="${website_url}/web#id=${object.id}&action=${action_id}&model=buyer.seller.communication&view_type=form"
+                            style="padding: 8px; text-decoration: none; color: #fff; 
+                                background:rgb(228,144,66); border-radius:4px;
+                                color:rgb(255,255,255); font-size:14px; font-weight:bold; ">
+                            Open Inquiry
+                        </a>
+                    </p>
+                    <!-- <p><br></p>
+                    <p>You can reply this mail to response the inquiry.</p> -->
+                </div>
+                            ]]>
+            </field>
+        </record>
+        
+    </data>
+</odoo>

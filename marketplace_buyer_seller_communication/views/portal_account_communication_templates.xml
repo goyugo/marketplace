@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : https://store.webkul.com/license.html/ -->
+<odoo>
+
+    <template id="portal_my_home_comm_requests" name="Portal My Home : communications entries"
+        inherit_id="portal.portal_my_home" priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-if="request.env['ir.default'].sudo().get('res.config.settings', 'group_mp_buyer_seller_comm') and comm_count" t-call="portal.portal_docs_entry">
+                <t t-set="title">Inquiries</t>
+                <t t-set="url" t-value="'/my/communications'"/>
+                <t t-set="count" t-value="comm_count"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_my_customer_comm" name="My Communication History">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">My Communication History</t>
+            </t>
+
+            <!-- General Inqiry -->
+            <a href="/inquiry" role="button" class="btn btn-secondary d-block d-sm-inline-block mt16 mb16"
+                aria-label="Send Inquiry" title="Send Inquiry"><i class="fa fa-shopping-cart"/> Send General Inquiry
+            </a>
+
+             <t t-if="not communications">
+                 <p>There are currently no communications for your account.</p>
+             </t>
+             <t t-if="communications" t-call="portal.portal_table">
+                    <thead>
+                        <tr class="active">
+                           <th> Subject </th>
+                           <th> Seller </th>
+                           <th> Product </th>
+                           <th> Location </th>
+                           <th> Created On </th>
+                           <th> Status </th>
+                        </tr>
+                    </thead>
+                    <t t-foreach="communications" t-as="comm">
+                        <tr class='clickable-row mp_buyer_seller_comm_table' data-href='url://my/communication/#{comm.id}?#{keep_query()}'>
+                            <td>
+                                <a t-attf-href="/my/communication/#{comm.id}?#{keep_query()}">
+                                    <t t-esc="comm.subject if len(comm.subject) &lt; 50 else comm.subject[:48] + '..'"/>
+                                </a>
+                            </td>
+                            <td>
+                                 <t t-esc="comm.marketplace_seller_id.sudo().name"/>
+                            </td>
+                            <td>
+                                 <t t-esc="comm.product_id.name"/>
+                            </td>
+                            <td>
+                                <t t-esc="comm.state_id.name"/>
+                            </td>
+                            <td>
+                                <span t-field="comm.create_date" t-options="{'widget': 'datetime'}"/>
+                            </td>
+                            <td style="text-transform:capitalize;">
+                                <div t-set="status" t-value="comm.state"/>
+                                <div t-if="status=='open'" class="badge badge-warning">
+                                   <i class="fa fa-history fa-1x"></i>
+                                   &#160; &#160;<span t-esc="status" style="font-size:12px; text-transform: capitalize;"/>
+                                </div>
+                                <div t-if="status=='resolved'" class="badge badge-success">
+                                   <i class="fa fa-check fa-1x"></i>
+                                   &#160; &#160;<span t-esc="status" style="font-size:12px;"/>
+                                </div>
+                                <div t-if="status=='closed'" class="badge badge-danger">
+                                   <i class="fa fa-times fa-1x"></i>
+                                   &#160; &#160;<span t-esc="status" style="font-size:12px;"/>
+                                </div>
+                            </td>
+                        </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_my_home_menu_communication" name="Communication History" inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'customer_comm'" t-attf-class="breadcrumb-item #{'active ' if not customer_comm else ''}">
+                <a t-if="customer_comm" t-attf-href="/my/communications?{{ keep_query() }}">Inquiries</a>
+                <t t-else="">Inquiries</t>
+            </li>
+            <!-- <li t-if="customer_comm" class="breadcrumb-item active">
+                <t t-esc="customer_comm.name"/>
+            </li> -->
+        </xpath>
+    </template>
+
+    <template id="mp_buyer_seller_chatter_header">
+        <div class="o_portal_chatter_header">
+            <t t-set="count" t-value="len(object.message_ids.filtered(lambda m: m.subtype_id.internal == False))"/>
+            <div class="o_message_counter">
+                <t t-if="count">
+                    <span class="o_message_count comm_detail_val"><i class=" fa fa-comments"/>&#160;&#160; <t t-esc="count"/>
+                        <t t-if="count == 1"> &#160; Chat</t>
+                        <t t-else=""> &#160; Chats</t>
+                    </span>
+                </t>
+                <t t-else="">
+                    <span class="o_message_count comm_detail_val"><i class=" fa fa-comments"/>&#160;&#160; There are no comments for now.</span>
+                </t>
+            </div>
+        </div>
+    </template>
+
+    <template id="mp_buyer_seller_chatter_composer">
+        <div class="o_portal_chatter_composer">
+            <div class="media">
+                <div class="media-left">
+                    <img class="o_portal_chatter_avatar pull-left" style="border-radius: 50%;"
+                        t-attf-src="/web/image/res.partner/#{user_id.partner_id.id}/image_small/50x50"/>
+                </div>
+                <div class="media-body ml8">
+                    <form enctype="multipart/form-data" class="o_portal_chatter_composer_form" t-attf-action="/mp/mail/chatter_post" method="POST">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <div class="">
+                            <textarea rows="4" name="message" class="form-control mp_chatter_textarea"
+                                placeholder="Type a message..."
+                                required="1"></textarea>
+                            <input type='hidden' name="res_model" t-att-value="object._name"/>
+                            <input type='hidden' name="res_id" t-att-value="object.id"/>
+                            <input type='hidden' name="token" t-att-value="token" t-if="token"/>
+                            <input type='hidden' name="sha_in" t-att-value="sha_in" t-if="sha_in"/>
+                            <input type='hidden' name="sha_time" t-att-value="sha_time" t-if="sha_time"/>
+                            <div>
+                                <div class="multi_input_file_div">
+                                    <input id="file_attachments" style="display:none;" type='file' name="attachments"  multiple="1" class="multifile"/>
+                                </div>
+                                <div class="btn btn-warning mt8" id="btn_file_attach"><span class=" fa fa-paperclip"/></div>
+                                <button t-attf-class="o_portal_chatter_composer_btn btn btn-info mt8 o_website_message_post_helper" type="submit"> Reply </button>
+                            </div>
+                            <div class="alert alert-danger mt8 mb0 o_portal_chatter_composer_error" style="display:none;">
+                                Oops! Something went wrong. Try to reload the page and log in.
+                            </div>
+                            <div id="show_attachment" class="mt8"></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <hr t-if="messages" style="margin-bottom:0px; padding-bottom:0px;"/>
+        </div>
+    </template>
+
+    <template id="mp_buyer_seller_chatter_messages">
+        <div class="o_portal_chatter_messages">
+            <t t-set="i" t-value="0"/>
+            <t t-set="count" t-value="int((len(messages)/5) + 1) if int((len(messages))%5!=0) else int((len(messages)/5))"/>
+            <t t-set="l" t-value="0"/>
+            <t t-set="j" t-value="5"/>
+            <t t-set="k" t-value="0"/>
+            <t t-foreach="messages" t-as="msg">
+                <t t-if="count > k">
+                    <t t-if="i == 0">
+                        <t t-foreach="messages[l:j]" t-as="message">
+                            <t t-set="user_msg" t-value="message.author_id.id == request.env.user.partner_id.id"/>
+                            <div class="container media o_portal_chatter_message mpchatBox morempChats" t-att-id="'message-' + str(message.id)"
+                                t-att-style="'display: flex;flex-direction: row;' if user_msg else 'display: flex;flex-direction: row-reverse;'">
+                                <div t-att-class="'media-left col-3 col-md-1' if user_msg else 'media-right col-3 pull-right col-md-1'"
+                                    t-att-style="'padding-left:3%;' if user_msg else 'padding-left:5px;'">
+                                    <img class="o_portal_chatter_avatar pull-left" style="border-radius: 50%;"
+                                        t-attf-src="/mail/#{message.model}/#{message.res_id}/avatar/#{message.author_id.id}"
+                                        alt="avatar"/>
+                                </div>
+                                <div t-att-class="'col-md-8' if user_msg else 'pull-right col-md-8'" style="padding:0px 12px;">
+                                    <div t-att-class="'o_portal_chatter_message_body_left' if user_msg else 'o_portal_chatter_message_body_right'">
+                                        <t t-raw="message.body"/>
+                                    </div>
+                                    <div class="o_portal_chatter_message_title">
+                                        <p class="o_portal_chatter_puslished_date">
+                                            <!-- <span t-if="not user_msg and message.attachment_ids" style="margin-right: 10%;">Sent <t t-esc="len(message.attachment_ids)"/> Attachment<t t-if="len(message.attachment_ids)>1">s</t></span> -->
+                                            <span t-field="message.date" t-field-options='{"widget": "datetime" , "format": "d-MMM-y on hh:mm a"}' style="white-space: nowrap;"/>
+                                            <span t-if="message.attachment_ids" style="margin-left: 10%;">Sent <t t-esc="len(message.attachment_ids)"/> Attachment<t t-if="len(message.attachment_ids)>1">s</t></span>
+                                        </p>
+                                    </div>
+                                    <div class="o_portal_chatter_attachments">
+                                        <div t-att-class="'col-md-2 text-center mp_chat_attachment_body mr8 pull-left' if user_msg else 'col-md-2 text-center mp_chat_attachment_body ml8 pull-right'"
+                                            t-foreach='message.attachment_ids' t-as='attachment'>
+                                            <a t-attf-href="/web/content/#{attachment.id}?download=true" target="_blank" style="display:inline-flex;">
+                                                <div class='oe_attachment_embedded o_image' style="width:60px; height:60px;background-size: cover;background-repeat: round;"
+                                                    t-att-title="attachment.name"
+                                                    t-att-data-mimetype="attachment.mimetype"
+                                                    t-attf-data-src="/web/image/#{attachment.id}/100x80"/>
+                                                <!-- <div class='oe_attachment_name' style="font-size:12px;"><t t-raw='attachment.name'/></div> -->
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                    <t t-if="not i == 0">
+                        <t t-foreach="messages[l:j]" t-as="message">
+                            <t t-set="user_msg" t-value="message.author_id.id == request.env.user.partner_id.id"/>
+                            <div class="container media o_portal_chatter_message mpchatBox morempChats" t-att-id="'message-' + str(message.id)"
+                                t-att-style="'flex-direction: row;display:none;' if user_msg else 'flex-direction: row-reverse;display:none;'">
+                                <div t-att-class="'media-left col-3 col-md-1' if user_msg else 'media-right col-3 pull-right col-md-1'"
+                                    t-att-style="'padding-left:3%;' if user_msg else 'padding-left:5px;'">
+                                    <img class="o_portal_chatter_avatar pull-left" style="border-radius: 50%;"
+                                        t-attf-src="/mail/#{message.model}/#{message.res_id}/avatar/#{message.author_id.id}"
+                                        alt="avatar"/>
+                                </div>
+                                <div t-att-class="'col-md-8' if user_msg else 'pull-right col-md-8'" style="padding:0px 12px;">
+                                    <div t-att-class="'o_portal_chatter_message_body_left' if user_msg else 'o_portal_chatter_message_body_right'">
+                                        <t t-raw="message.body"/>
+                                    </div>
+                                    <div class="o_portal_chatter_message_title">
+                                        <p class="o_portal_chatter_puslished_date">
+                                            <!-- <span t-if="not user_msg and message.attachment_ids">Sent <t t-esc="len(message.attachment_ids)"/> Attachment<t t-if="len(message.attachment_ids)>1">s</t></span> -->
+                                            <span t-field="message.date" t-field-options='{"widget": "datetime" , "format": "d-MMM-y on h:m a"}' style="white-space: nowrap;"/>
+                                            <span t-if="message.attachment_ids">Sent <t t-esc="len(message.attachment_ids)"/> Attachment<t t-if="len(message.attachment_ids)>1">s</t></span>
+                                        </p>
+                                    </div>
+                                    <div class="o_portal_chatter_attachments">
+                                        <div t-att-class="'col-md-2 text-center mp_chat_attachment_body mr8 pull-left' if user_msg else 'col-md-2 text-center mp_chat_attachment_body ml8 pull-right'"
+                                            t-foreach='message.attachment_ids' t-as='attachment'>
+                                            <a t-attf-href="/web/content/#{attachment.id}?download=true" target="_blank" style="display:inline-flex;">
+                                                <div class='oe_attachment_embedded o_image' style="width:60px; height:60px;background-size: cover;background-repeat: round;"
+                                                    t-att-title="attachment.name"
+                                                    t-att-data-mimetype="attachment.mimetype"
+                                                    t-attf-data-src="/web/image/#{attachment.id}/100x80"/>
+                                                <!-- <div class='oe_attachment_name' style="font-size:12px;"><t t-raw='attachment.name'/></div> -->
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                    <t t-set="i" t-value="i+1"/>
+                    <t t-set="l" t-value="j"/>
+                    <t t-set="j" t-value="j+5"/>
+                    <t t-set="k" t-value="k+1"/>
+                </t>
+            </t>
+            <div t-if="len(object.message_ids.filtered(lambda m: m.subtype_id.internal == False)) > 5"
+                class="col-md-2 offset-md-5 mt16 mb16"
+                id="loadMore">
+               <a href="#" style="text-decoration: none;">Load More..</a>
+            </div>
+        </div>
+    </template>
+
+    <template id="message_thread_for_mp_buyer_seller_comm">
+        <div id="discussion" class="hidden-print o_not_editable mt16"
+            t-att-data-token="token" t-att-data-res_model="object._name" t-att-data-res_id="object.id"
+            t-att-data-pager_step="message_per_page or 10" >
+            <div class="oe_structure"/>
+            <div class="container comm_detail_container">
+                <div class="col-md-12 mt16">
+                    <t t-call="marketplace_buyer_seller_communication.mp_buyer_seller_chatter_header"/>
+                </div>
+                <t t-set="messages" t-value="object.message_ids"/>
+                <t t-set="messages" t-value="object.message_ids.filtered(lambda m: m.subtype_id.internal == False)"/>
+                <div class="oe_structure"/>
+                <div class="col-md-12 mt16">
+                    <t t-call="marketplace_buyer_seller_communication.mp_buyer_seller_chatter_composer"/>
+                </div>
+                <div class="oe_structure"/>
+                <div t-if="messages" class="col-md-12 mt16">
+                    <t t-call="marketplace_buyer_seller_communication.mp_buyer_seller_chatter_messages"/>
+                </div>
+            </div>
+            <div class="oe_structure"/>
+        </div>
+	</template>
+
+    <!-- DETAILS OF TABLE Communication History OPEN -->
+
+    <template id="portal_comm_requests_page" name="Communication History">
+        <t t-call="portal.portal_layout">
+            <div id="wrap">
+                <div class="container mt8 mb8 comm_detail_container">
+                    <div class="row ml0 mr0">
+                        <div class="col-md-2">
+                            <div class="text-center" style="height: 75px!important;">
+                                <a t-attf-href="/seller/profile/#{customer_comm.marketplace_seller_id.sudo().url_handler if customer_comm.marketplace_seller_id.sudo().url_handler else customer_comm.marketplace_seller_id.sudo().id}" title="View Seller Profile" target="new">
+                                    <img t-if="customer_comm.marketplace_seller_id.sudo().profile_image"
+                                        style="border-radius:50%;"
+                                        t-attf-src="/web/image/res.partner/#{customer_comm.marketplace_seller_id.sudo().id}/profile_image"
+                                        width="auto" height="100%" alt="Not found"/>
+                                    <img t-else="" src="/web/static/src/img/placeholder.png"
+                                        style="border-radius:50%;" alt="Not found" height="100%" width="auto"/>
+                                </a>
+                            </div>
+                            <div class="text-center mt8 mb8">
+                                <span class="comm_detail_val" style="font-weight:bold;">
+                                    <t t-esc="customer_comm.marketplace_seller_id.sudo().name"/>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb8">
+                                <span class="comm_detail_attr">Subject : </span>
+                                <span class="comm_detail_val"> <t t-esc="customer_comm.subject"/> </span>
+                            </div>
+                            <div class="mb8">
+                                <span class="comm_detail_attr">Created On : </span>
+                                <span class="comm_detail_val"> <span t-field="customer_comm.create_date" t-field-options='{"widget": "datetime" , "format": "d-MMM-y"}' style="white-space: nowrap;"/> </span>
+                            </div>
+                            <div class="mb8">
+                                <span class="comm_detail_attr">Product : </span>
+                                <span class="comm_detail_val"> <t t-esc="customer_comm.product_id.name"/> </span>
+                            </div>
+                            <div class="mb8">
+                                <span class="comm_detail_attr">Category : </span>
+                                <span class="comm_detail_val"> <t t-esc="customer_comm.category_id.name"/> </span>
+                            </div>
+                            <div class="mb8">
+                                <span class="comm_detail_attr">Location : </span>
+                                <span class="comm_detail_val"> <t t-esc="customer_comm.state_id.name"/> </span>
+                            </div>
+                            <div t-if="customer_comm.resolved_date" class="mb8">
+                                <span class="comm_detail_attr">Resolved On : </span>
+                                <span class="comm_detail_val"> <span t-field="customer_comm.resolved_date" t-field-options='{"widget": "datetime" , "format": "d-MMM-y"}' style="white-space: nowrap;"/> </span>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb8">
+                                <span class="comm_detail_attr">Status : </span>
+                                <t t-set="state" t-value="customer_comm.state"/>
+                                <t t-if="state == 'open'">
+                                    &#160;&#160;<i class="fa fa-circle" style="font-size: 12px;color:#4cae4c;" aria-hidden="true"></i>
+                                    <span class="comm_detail_val"> &#160;&#160; Open </span>
+                                </t>
+                                <t t-if="state == 'resolved'">
+                                    &#160;&#160;<i class="fa fa-circle text-warning" style="font-size: 12px;" aria-hidden="true"></i>
+                                    <span class="comm_detail_val"> &#160;&#160; Resolved </span>
+                                </t>
+                                <t t-if="state == 'closed'">
+                                    &#160;&#160;<i class="fa fa-circle text-danger" style="font-size: 12px;" aria-hidden="true"></i>
+                                    <span class="comm_detail_val"> &#160;&#160; Closed </span>
+                                </t>
+                            </div>
+                            <div t-if="customer_comm.closed_date" class="mb8">
+                                <span class="comm_detail_attr">Closed : &#160;</span>
+                                <span class="comm_detail_val"> <span t-field="customer_comm.closed_date" t-field-options='{"widget": "datetime" , "format": "d-MMM-y"}' style="white-space: nowrap;"/> </span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr style="margin:0px" class="mt8"/>
+                    <div class="container">
+                        <span class="col-md-2 text-center comm_detail_attr">Description : </span>
+                        <span class="comm_detail_val col-md-10 "> <t t-esc="customer_comm.desc"/> </span>
+                    </div>
+                    <!-- <div class="col-md-12 d-none d-sm-block d-md-none">
+                        <span class="comm_detail_attr">Description : </span>
+                        <span class="comm_detail_val"> <t t-esc="customer_comm.desc"/> </span>
+                    </div> -->
+                </div>
+                <t t-call="marketplace_buyer_seller_communication.message_thread_for_mp_buyer_seller_comm">
+                    <t t-set="object" t-value="customer_comm"/>
+                    <t t-set="chatter_mode" t-value="'json'"/>
+                </t>
+            </div>
+        </t>
+    </template>
+
+
+</odoo>

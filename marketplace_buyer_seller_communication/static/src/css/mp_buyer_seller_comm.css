@@ -1,0 +1,149 @@
+/* Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) */
+/* See LICENSE file for full copyright and licensing details. */
+/* License URL : https://store.webkul.com/license.html/ */
+
+.o_portal_chatter_avatar{
+    width: 45px;
+    height: 45px;
+}
+
+.o_portal_chatter_header {
+    background: #F0F2F8;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.o_portal_chatter_composer {
+    margin-bottom: 15px;
+}
+
+.o_portal_chatter_messages {
+    margin-bottom: 15px;
+}
+
+.o_portal_chatter_message_body_left{
+    background: #EFF2FD;
+    border-radius: 10px;
+    padding: 10px;
+    font-family: ArialMT;
+    font-size: 15px;
+    color: #000000db;
+    letter-spacing: 0;
+}
+.o_portal_chatter_attachments{
+    margin-top: -5px;
+}
+.o_portal_chatter_message_body_right{
+    background: #6285f0;
+    font-family: ArialMT;
+    border-radius: 10px;
+    font-family: ArialMT;
+    font-size: 15px;
+    color: #FFFFFF;
+    letter-spacing: 0;
+    padding: 10px;
+}
+
+.o_portal_chatter_message_body_left > p{
+    margin: 0;
+}
+.o_portal_chatter_message_body_right > p{
+    margin: 0;
+}
+
+.o_portal_chatter_puslished_date{
+    font-family: ArialMT;
+    font-size: 14px;
+    color: #AAAAAA;
+    letter-spacing: 0;
+}
+
+.o_portal_chatter_messages > .o_portal_chatter_message_title > p{
+    font-size:85%;
+    color:@odoo-main-color-muted;
+    margin: 0px;
+}
+
+
+.o_portal_chatter_pager {
+    text-align: center;
+}
+
+.mp_chat_attachment_body{
+    background: #FFFFFF;
+    border: 1px solid #D8D8D8;
+    box-shadow: 0 0 2px -1px rgba(0,0,0,0.50);
+    border-radius: 4px;
+    padding: 0px 2px;
+    margin-bottom: 8px;
+    width: auto;
+    height: 63px;
+}
+
+.comm_detail_container{
+    background: #FFFFFF;
+    border: 1px solid #F1F1F1;
+    box-shadow: 0 2px 4px 0 rgba(223,223,223,0.50);
+    padding:  10px 0;
+}
+
+.comm_detail_attr{
+    font-family: ArialMT;
+    font-size: 16px;
+    color: #3C5DC1;
+    letter-spacing: 0;
+    font-weight: bold;
+}
+
+.comm_detail_val{
+    font-family: ArialMT;
+    font-size: 16px;
+    color: #545454;
+    letter-spacing: 0;
+}
+
+.mp_chatter_textarea{
+    background: #FFFFFF;
+    border: 1px solid #979797;
+    box-shadow: 0 0 4px 1px rgba(223,223,223,0.50);
+    border-radius: 10px 10px 10px 10px;
+}
+
+.mp_chatter_textarea::placeholder{
+    font-size: 15px;
+    color: #545454;
+    letter-spacing: 0;
+}
+
+.mp_chat_attach{
+    display: inline-block;
+    min-width: 10px;
+    padding: 3px 7px;
+    line-height: 1;
+    vertical-align: middle;
+    white-space: nowrap;
+    text-align: center;
+    background: #D8D8D8;
+    border: 1px solid #97979759;
+    border-radius: 5px;
+    font-family: ArialMT;
+    font-size: 15px;
+    color: #545454;
+    letter-spacing: 0;
+    margin-right: 1%;
+    margin-bottom:1%;
+}
+
+#loadMore{
+    background: #FFFFFF;
+    border: 1px solid #DBE0F1;
+    box-shadow: 0 0 4px 0 rgba(162,162,162,0.50);
+    border-radius: 10px;
+    font-family: ArialMT;
+    font-size: 18px;
+    color: #484848;
+    letter-spacing: 0;
+    text-align: center;
+    padding: 1%;
+    cursor: pointer;
+}

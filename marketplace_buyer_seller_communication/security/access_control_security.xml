@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : https://store.webkul.com/license.html/ -->
+<odoo>
+    <data noupdate="0">
+
+        <record id="group_for_mp_buyer_seller_comm" model="res.groups">
+            <field name="name">Marketplace Buyer Seller Communication Group</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+        </record>
+
+        <record id="seller_sees_only_own_comm" model="ir.rule">
+            <field name="name">Seller Own Communication</field>
+            <field name="model_id" ref="marketplace_buyer_seller_communication.model_buyer_seller_communication"/>
+            <field name="domain_force">[('marketplace_seller_id','=',user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('odoo_marketplace.marketplace_seller_group'))]"/>
+        </record>
+
+        <record id="portal_sees_only_own_comm" model="ir.rule">
+           <field name="name">Portal Communication </field>
+           <field name="model_id" ref="marketplace_buyer_seller_communication.model_buyer_seller_communication"/>
+           <field name="perm_write" eval="0"/>
+           <field name="perm_read" eval="1"/>
+           <field name="perm_create" eval="0"/>
+           <field name="perm_unlink" eval="0"/>
+           <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+       </record>
+
+        <record id="officer_sees_all_comm" model="ir.rule">
+            <field name="name">Officer sees all Communication</field>
+            <field name="model_id" ref="marketplace_buyer_seller_communication.model_buyer_seller_communication"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('odoo_marketplace.marketplace_officer_group'))]"/>
+        </record>
+
+        <record id="manager_sees_all_comm" model="ir.rule">
+            <field name="name">Manager sees all communication</field>
+            <field name="model_id" ref="marketplace_buyer_seller_communication.model_buyer_seller_communication"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('odoo_marketplace.marketplace_manager_group'))]"/>
+        </record>
+
+        <!-- mail_template_portal,portal_access_mail_template,mail.model_mail_template,base.group_portal,1,1,1,0 -->
+
+        <!-- custom -->
+        <!-- make seller group inherited to buyer communication  -->
+        <record id="odoo_marketplace.marketplace_seller_group" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('group_for_mp_buyer_seller_comm'))]"/>
+        </record>
+    </data>
+</odoo>
