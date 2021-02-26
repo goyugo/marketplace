@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Custom -->
+    <!-- * Always show Wishlist on header -->
+    <!-- <template id="website_sale_wishlist.header_wishlist_link" name="Header Wishlist Link">
+        <t t-set="wishcount" t-value="len(request.env['product.wishlist'].current())"/>
+        <t t-set="show_wishes" t-value="True"/>
+        <li t-attf-class="o_wsale_my_wish #{not show_wishes and 'd-none'} #{_item_class}">
+            <a href="/shop/wishlist" t-attf-class="#{_link_class}">
+                <i t-if="_icon" class="fa fa-1x fa-heart"/>
+                <span t-if="_text">Wishlist</span>
+                <sup t-esc="wishcount" t-attf-class="my_wish_quantity o_animate_blink badge badge-primary"/>
+            </a>
+        </li>
+    </template> -->
+
+    <!-- Custom -->
+    <!-- * Add Wishlist Inquiry Form -->
+    <!-- * Hide Add product to my cart but keep it in my wishlist Checkbox -->
+    <!-- * Replace Add to Chart to Send Inquiry -->
+    <template id="product_wishlist_inherit" name="Wishlist Page Inherit" inherit_id="website_sale_wishlist.product_wishlist">
+        <xpath expr="//div[hasclass('container')]//h3[1]" position="replace">
+            <h3>My Product of Interest</h3>
+        </xpath>
+        <xpath expr="//div[hasclass('js_sale')]//h3[1]" position="after">
+            <t t-set="additional_title">Shop Wishlist</t>
+            <div class="inquiry_menu mt32">
+                <div id="commModal" class="modal fade" role="dialog">
+                    <form class="mp_contact_seller_form needs-validation" action="/submit/wishlist-inquiries" method="post">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary">
+                                    <h4 class="modal-title mb0 mt0">SEND INQUIRY TO SELLER</h4>
+                                    <button type="button" class="close" data-dismiss="modal"><i class="fa fa-close"/></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="wish_ids" t-att-value="wishes.ids"/>
+                                    <div class="form-row mb8">
+                                        <label class="text-muted" for="name">Subject : <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="subject" placeholder="Subject" t-att-value="website.mp_inquiry_subject or False" required="1"
+                                            default_focus="1" autocomplete="off"/>
+                                    </div>
+                                    <div class="form-row mb8">
+                                        <label class="text-muted" for="email">Your Query : <span class="text-danger">*</span></label>
+                                        <textarea name="query_desc" rows="4" cols="100" id="query_desc" class="form-control" placeholder="Type your message..." required="1">
+                                            <t t-esc="website.mp_inquiry_message or False"/>
+                                        </textarea>
+                                    </div>
+                                    <div class="form-row">
+                                        <label class="text-muted" for="mp_auth_form_input"> <span class="auth_question"></span>
+                                            <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="mp_auth_form_input" placeholder="" required="1" autocomplete="off"/>
+                                    </div>
+                                    <div class="show_form_err" style="display:none;">
+                                        <span class="text-danger" style="font-size: 14px;">
+                                            <i class="fa fa-exclamation-triangle"/> Invalid Captcha..!!
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button id="communication_modal_close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button id="comm_form_submit" class="btn btn-success" type="submit" style="padding:6px 25px;"> Submit </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <a t-if="wishes" data-toggle="modal" data-target="#commModal" role="button" class="btn btn-secondary mb4" t-attf-href="/inquiry">
+                    Send <span class='d-none d-md-inline'>Inquiries to All</span>
+                </a>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('checkbox')]" position="replace">
+            <label class='text-muted' hidden="True"><input type="checkbox" id='b2b_wish' value="1" class="mr8"/>Add product to my cart but keep it in my wishlist</label>
+        </xpath>
+        <xpath expr="//table[1]/body//td[last()]//button[1]" position="replace">
+            <div id="commModalSingle" class="modal fade" role="dialog">
+                <form class="mp_contact_seller_form needs-validation" action="/submit/communication" method="post">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary">
+                                <h4 class="modal-title mb0 mt0">SEND INQUIRY TO SELLER</h4>
+                                <button type="button" class="close" data-dismiss="modal"><i class="fa fa-close"/></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="marketplace_seller_id" t-att-value="wish.product_id.marketplace_seller_id.id"/>
+                                <input type="hidden" name="product_id" placeholder="Product ID" t-att-value="wish.product_id.product_tmpl_id.id if wish.product_id else False" required="1" readonly="1"/>
+                                <input type="hidden" name="category_id" placeholder="Product Category" t-att-value="wish.product_id and wish.product_id.public_categ_id and wish.product_id.public_categ_id.id" required="1" readonly="1"/>
+                                <div class="form-row mb8">
+                                    <label class="text-muted" for="name">Your Name : <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="name" placeholder="Name" t-att-value="request.env.user.partner_id.name" required="1" readonly="1"/>
+                                </div>
+                                <div class="form-row mb16">
+                                    <label class="text-muted" for="email">Your Email : <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="email" placeholder="Email" t-att-value="request.env.user.partner_id.email" required="1" readonly="1"/>
+                                </div>
+                                <div class="form-row mb16">
+                                    <label class="text-muted" for="product">Product Name : <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="product_name" placeholder="Product Name" t-att-value="wish.product_id.name if wish.product_id else False" required="1" readonly="1"/>
+                                </div>
+                                <div class="form-row mb8">
+                                    <label class="text-muted" for="name">Subject : <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="subject" placeholder="Subject"
+                                        t-att-value="website.mp_inquiry_subject or False" required="1"
+                                        default_focus="1" autocomplete="off"/>
+                                </div>
+                                <div class="form-row mb8">
+                                    <label class="text-muted" for="email">Your Query : <span class="text-danger">*</span></label>
+                                    <textarea name="query_desc" rows="4" cols="100" id="query_desc" class="form-control" placeholder="Type your message..." required="1">
+                                        <t t-esc="website.mp_inquiry_message or False"/>
+                                    </textarea>
+                                </div>
+                                <div class="form-row">
+                                    <label class="text-muted" for="mp_auth_form_input"> <span class="auth_question"></span>
+                                        <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="mp_auth_form_input" placeholder="" required="1" autocomplete="off"/>
+                                </div>
+                                <div class="show_form_err" style="display:none;">
+                                    <span class="text-danger" style="font-size: 14px;">
+                                        <i class="fa fa-exclamation-triangle"/> Invalid Captcha..!!
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="communication_modal_close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button id="comm_form_submit" class="btn btn-success" type="submit" style="padding:6px 25px;"> Submit </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!-- <a role="button" class="btn btn-secondary btn-block mb4" t-attf-href="#{wish.product_id.website_url}">
+                Send <span class='d-none d-md-inline'>Inquiry</span>
+            </a> -->
+            <a data-toggle="modal" data-target="#commModalSingle" role="button" class="btn btn-primary btn-block mb4" style="color: #FFFFFF;">
+                Send Inquiry
+            </a>
+        </xpath>
+    </template>
+</odoo>
