@@ -5,11 +5,11 @@
 
 <odoo>
     <data noupdate="1">
-        <!--<record id="mp_seller_payment_product_demo_data" model="product.product">
+        <record id="mp_seller_payment_product_demo_data" model="product.product">
             <field name="name">Marketplace Seller Payment</field>
             <field name="sale_ok" eval="False"/>
             <field name="purchase_ok" eval="False"/>
             <field name="type">service</field>
-        </record>-->
+        </record>
     </data>
 </odoo>
